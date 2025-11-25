@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YAMI BOMBER</title>
+  <style>
+    body{background:#000;color:#0ff;margin:0;font-family:monospace;overflow:hidden}
+    canvas{position:fixed;top:0;left:0;z-index:0}
+    .box{max-width:500px;margin:30px auto;padding:30px;background:#001;border:3px solid #0ff;border-radius:15px;box-shadow:0 0 40px #0ff;position:relative;z-index:10}
+    h1{text-align:center;font-size:2.8em;margin:0;text-shadow:0 0 20px #0ff}
+    input,button{width:100%;padding:15px;margin:10px 0;border:2px solid #0ff;background:#000;color:#0ff;border-radius:10px;font-size:16px}
+    button{background:#0ff;color:#000;font-weight:bold;cursor:pointer}
+    .bar{height:30px;background:#111;border:2px solid #0ff;border-radius:10px;overflow:hidden;margin:20px 0}
+    .fill{height:100%;width:0%;background:#0ff;transition:width 1s}
+    #log{height:220px;overflow-y:auto;background:#000;padding:15px;border:2px solid #0ff;border-radius:10px;font-size:14px}
+    .g{color:#0f0}.r{color:#f00}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="box">
+  <h1>YAMI BOMBING</h1>
+  <p style="text-align:center;margin:10px">11 REAL SERVICES • 1–500 SMS</p>
+  <input type="text" id="t" placeholder="09123456789" maxlength="11">
+  <input type="number" id="n" placeholder="SMS Count (1-500)" min="1" max="500" value="10">
+  <button onclick="attack()">LAUNCH ATTACK</button>
+  <div class="bar"><div class="fill" id="bar"></div></div>
+  <div style="text-align:center;font-size:20px">
+    <span class="g">Success: <span id="s">0</span></span> |
+    <span class="r">Failed: <span id="f">0</span></span> |
+    Total: <span id="t">0</span>
+  </div>
+  <div id="log">Ready...</div>
+</div>
+
+<script>
+// Matrix rain background
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+canvas.width = innerWidth; canvas.height = innerHeight;
+const chars = "01アイウエオカキクケコサシスセソタチツテト";
+const cols = canvas.width/14;
+const drops = new Array(Math.floor(cols)).fill(1);
+function rain() {
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#0ff';
+  ctx.font = '14px monospace';
+  for(let i=0;i<drops.length;i++){
+    const char = chars[Math.floor(Math.random()*chars.length)];
+    ctx.fillText(char, i*14, drops[i]*14);
+    if(drops[i]*14 > canvas.height && Math.random()>0.975) drops[i]=0;
+    drops[i]++;
+  }
+}
+setInterval(rain, 40);
+
+async function attack() {
+  const num = document.getElementById("t").value.trim();
+  const count = parseInt(document.getElementById("n").value) || 150;
+  const log = document.getElementById("log");
+  const bar = document.getElementById("bar");
+
+  if (!/^09\d{9}$/.test(num)) {
+    log.innerHTML = "<span class='r'>Invalid number!</span>"; return;
+  }
+
+  log.innerHTML = `Bombing ${num} with ${count} SMS...`;
+  bar.style.width = "30%";
+
+  try {
+    const res = await fetch("/api/attack", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({target: num, sms: count})
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } 
+    catch { log.innerHTML += "<br><span class='r'>Server error</span>"; return; }
+
+    bar.style.width = "100%";
+    document.getElementById("s").textContent = data.success || 0;
+    document.getElementById("f").textContent = data.failed || 0;
+    document.getElementById("t").textContent = data.total || count;
+
+    log.innerHTML += `<br><span class='g'>ATTACK SUCCESSFUL!<br>Success: ${data.success} | Failed: ${data.failed}</span>`;
+  } catch (e) {
+    log.innerHTML += "<br><span class='r'>Network error</span>";
+  }
+}
+</script>
+</body>
+</html>
