@@ -3,77 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>YAMI SMS BOMBER</title>
+    <title>YAMI BOMBER</title>
     <style>
         body {
             background: #000;
             color: #0ff;
             margin: 0;
+            font-family: monospace;
             overflow-x: hidden;
-            font-family: 'Courier New', monospace;
-        }
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
         }
         .container {
-            max-width: 500px;
-            margin: 30px auto;
-            padding: 25px;
-            background: rgba(0, 15, 30, 0.95);
+            max-width: 480px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #001;
             border: 2px solid #0ff;
-            border-radius: 12px;
-            box-shadow: 0 0 25px #0ff;
-            position: relative;
-            z-index: 10;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #0ff;
         }
         h1 {
             text-align: center;
             margin: 0 0 10px;
-            text-shadow: 0 0 15px #0ff;
-            color: #0ff;
-            font-size: 2em;
+            text-shadow: 0 0 10px #0ff;
         }
         .subtitle {
             text-align: center;
             color: #0f8;
             margin-bottom: 20px;
-            font-size: 13px;
+            font-size: 14px;
         }
         input, button {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
             border: 1px solid #0ff;
-            background: rgba(0, 255, 255, 0.1);
+            background: #000;
             color: #0ff;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 16px;
             box-sizing: border-box;
         }
-        input:focus {
-            outline: none;
-            box-shadow: 0 0 10px #0ff;
-            background: rgba(0, 255, 255, 0.15);
-        }
         button {
-            background: linear-gradient(45deg, #0ff, #0080ff);
+            background: #0ff;
             color: #000;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            border: none;
-        }
-        button:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 15px #0ff;
         }
         button:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
         .stats {
             display: flex;
@@ -82,206 +60,114 @@
             font-size: 16px;
             font-weight: bold;
         }
-        .success { color: #0f0; text-shadow: 0 0 5px #0f0; }
-        .failed { color: #f00; text-shadow: 0 0 5px #f00; }
-        .total { color: #0ff; text-shadow: 0 0 5px #0ff; }
+        .s { color: #0f0; }
+        .f { color: #f00; }
         #log {
-            height: 180px;
+            height: 200px;
             overflow-y: auto;
-            background: rgba(0, 0, 0, 0.7);
+            background: #000;
             padding: 12px;
             border: 1px solid #0ff;
             border-radius: 6px;
             margin-top: 15px;
-            font-size: 13px;
-            line-height: 1.4;
+            font-size: 12px;
         }
-        .log-success { color: #0f0; }
-        .log-error { color: #f00; }
-        .log-info { color: #0ff; }
-        .log-warning { color: #ff0; }
-        .progress {
-            height: 4px;
-            background: rgba(0, 255, 255, 0.2);
-            border-radius: 2px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #0ff, #00f);
-            width: 0%;
-            transition: width 0.3s;
-        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #0ff; }
     </style>
 </head>
 <body>
-    <canvas id="matrixCanvas"></canvas>
-    
     <div class="container">
         <h1>YAMI BOMBER</h1>
-        <div class="subtitle">MAX 500 SMS • 7 SERVICES • PHILIPPINES ONLY</div>
+        <div class="subtitle">MAX 500 SMS • 7 SERVICES • PH ONLY</div>
         
-        <input type="text" id="targetNumber" placeholder="Enter target number (09XXXXXXXXX)" maxlength="11" value="09765664364">
-        <input type="number" id="smsCount" placeholder="Number of SMS (1-500)" min="1" max="500" value="100">
+        <input type="text" id="target" placeholder="09XXXXXXXXX" maxlength="11">
+        <input type="number" id="count" placeholder="SMS Count (1-500)" min="1" max="500" value="100">
         
-        <button id="attackBtn" onclick="launchAttack()">🚀 LAUNCH ATTACK</button>
-        
-        <div class="progress">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
+        <button id="btn" onclick="attack()">LAUNCH ATTACK</button>
         
         <div class="stats">
-            <div>Success: <span id="successCount" class="success">0</span></div>
-            <div>Failed: <span id="failedCount" class="failed">0</span></div>
-            <div>Total: <span id="totalCount" class="total">0</span></div>
+            <div>Success: <span id="success" class="s">0</span></div>
+            <div>Failed: <span id="failed" class="f">0</span></div>
+            <div>Total: <span id="total">0</span></div>
         </div>
         
-        <div id="log" class="log-info">✅ System ready. Enter target number and click launch.</div>
+        <div id="log" class="info">Ready to attack</div>
     </div>
 
     <script>
-        // Matrix Rain Background
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        let attacking = false;
 
-        const chars = '0101010101アイウエオカキクケコ';
-        const fontSize = 14;
-        let columns = Math.floor(canvas.width / fontSize);
-        let drops = Array(columns).fill(1);
-
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0ff';
-            ctx.font = fontSize + 'px monospace';
-            
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
-        }
-        setInterval(drawMatrix, 33);
-
-        // Attack Function
-        let isAttacking = false;
-
-        async function launchAttack() {
-            if (isAttacking) {
-                addLog('⚠️ Attack already in progress...', 'warning');
-                return;
-            }
-
-            const target = document.getElementById('targetNumber').value.trim();
-            const count = parseInt(document.getElementById('smsCount').value) || 100;
+        function log(msg, type = 'info') {
             const log = document.getElementById('log');
-            const successCount = document.getElementById('successCount');
-            const failedCount = document.getElementById('failedCount');
-            const totalCount = document.getElementById('totalCount');
-            const attackBtn = document.getElementById('attackBtn');
-            const progressBar = document.getElementById('progressBar');
-
-            // Validation
-            if (!/^09\d{9}$/.test(target)) {
-                addLog('❌ Invalid number! Must be 11 digits starting with 09', 'error');
-                return;
-            }
-
-            if (count < 1 || count > 500) {
-                addLog('❌ SMS count must be between 1-500', 'error');
-                return;
-            }
-
-            // Reset UI
-            successCount.textContent = '0';
-            failedCount.textContent = '0';
-            totalCount.textContent = '0';
-            progressBar.style.width = '0%';
-            attackBtn.disabled = true;
-            attackBtn.textContent = '🔄 ATTACKING...';
-            isAttacking = true;
-
-            addLog(`🚀 Starting attack on ${target} with ${count} SMS...`, 'info');
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
-
-                const response = await fetch('/api/attack', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        target: target,
-                        sms: count
-                    }),
-                    signal: controller.signal
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                if (data.error) {
-                    addLog(`❌ ${data.error}`, 'error');
-                } else {
-                    successCount.textContent = data.success;
-                    failedCount.textContent = data.failed;
-                    totalCount.textContent = data.total;
-                    progressBar.style.width = '100%';
-                    addLog(`✅ ${data.message}`, 'success');
-                }
-            } catch (error) {
-                console.error('Attack failed:', error);
-                if (error.name === 'AbortError') {
-                    addLog('❌ Request timeout - server took too long to respond', 'error');
-                } else {
-                    addLog(`❌ Error: ${error.message}`, 'error');
-                }
-            } finally {
-                attackBtn.disabled = false;
-                attackBtn.textContent = '🚀 LAUNCH ATTACK';
-                isAttacking = false;
-            }
-        }
-
-        function addLog(message, type = 'info') {
-            const log = document.getElementById('log');
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-${type}`;
-            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            log.appendChild(logEntry);
+            const time = new Date().toLocaleTimeString();
+            log.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
             log.scrollTop = log.scrollHeight;
         }
 
+        async function attack() {
+            if (attacking) return;
+            
+            const target = document.getElementById('target').value.trim();
+            const count = parseInt(document.getElementById('count').value) || 100;
+            const btn = document.getElementById('btn');
+            
+            if (!/^09\d{9}$/.test(target)) {
+                log('Invalid phone number', 'error');
+                return;
+            }
+            
+            if (count < 1 || count > 500) {
+                log('SMS count must be 1-500', 'error');
+                return;
+            }
+            
+            attacking = true;
+            btn.disabled = true;
+            btn.textContent = 'ATTACKING...';
+            
+            document.getElementById('success').textContent = '0';
+            document.getElementById('failed').textContent = '0';
+            document.getElementById('total').textContent = '0';
+            
+            log(`Starting attack on ${target} with ${count} SMS...`, 'info');
+            
+            try {
+                const response = await fetch('/api/attack', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target, sms: count})
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Request failed');
+                }
+                
+                document.getElementById('success').textContent = data.success;
+                document.getElementById('failed').textContent = data.failed;
+                document.getElementById('total').textContent = data.total;
+                
+                log(`Attack completed: ${data.success} success, ${data.failed} failed`, 'success');
+                
+            } catch (error) {
+                log(`Error: ${error.message}`, 'error');
+            } finally {
+                attacking = false;
+                btn.disabled = false;
+                btn.textContent = 'LAUNCH ATTACK';
+            }
+        }
+        
         // Enter key support
-        document.getElementById('targetNumber').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') launchAttack();
+        document.getElementById('target').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') attack();
         });
-        document.getElementById('smsCount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') launchAttack();
+        document.getElementById('count').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') attack();
         });
-
-        // Auto-focus on input
-        document.getElementById('targetNumber').focus();
     </script>
 </body>
 </html>
