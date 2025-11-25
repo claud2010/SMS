@@ -1,27 +1,11 @@
 {
   "version": 2,
   "builds": [
-    { 
-      "src": "api/attack.py", 
-      "use": "@vercel/python",
-      "config": { 
-        "maxLambdaSize": "15mb"
-      }
-    },
-    { 
-      "src": "public/**", 
-      "use": "@vercel/static" 
-    }
+    { "src": "api/attack.py", "use": "@vercel/python" },
+    { "src": "public/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { 
-      "src": "/api/attack", 
-      "dest": "/api/attack.py",
-      "methods": ["POST", "OPTIONS"]
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "/public/$1" 
-    }
+    { "src": "/api/attack", "dest": "/api/attack.py" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
