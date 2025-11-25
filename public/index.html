@@ -1,86 +1,49 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>YAMI BOMBER</title>
-  <style>
-    body{background:#000;color:#0ff;margin:0;font-family:monospace;overflow:hidden}
-    canvas{position:fixed;top:0;left:0;z-index:-1}
-    .box{max-width:480px;margin:30px auto;padding:30px;background:#001;border:3px solid #0ff;border-radius:15px;box-shadow:0 0 40px #0ff}
-    h1{text-align:center;margin:0 0 15px;font-size:2.5em;text-shadow:0 0 20px #0ff}
-    input,button{width:100%;padding:16px;margin:12px 0;border:2px solid #0ff;background:#000;color:#0ff;border-radius:10px;font-size:16px}
-    button{background:#0ff;color:#000;font-weight:bold;cursor:pointer}
-    button:hover{box-shadow:0 0 30px #0ff}
-    #log{height:200px;overflow-y:auto;background:#000;padding:15px;border:2px solid #0ff;border-radius:10px;font-size:14px;margin-top:20px}
-    .g{color:#0f0}.r{color:#f00}
-  </style>
-</head>
-<body>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>YAMI SMS BOMB</title>
+<style>
+  body{background:#000;color:#0ff;margin:0;overflow:hidden;font-family:monospace}
+  canvas{position:fixed;top:0;left:0;z-index:-1}
+  .box{max-width:480px;margin:30px auto;padding:30px;background:#001;border:3px solid #0ff;border-radius:15px;box-shadow:0 0 40px #0ff}
+  h1{text-align:center;margin:0 0 15px;text-shadow:0 0 20px #0ff}
+  input,button{width:100%;padding:16px;margin:12px 0;border:2px solid #0ff;background:#000;color:#0ff;border-radius:10px;font-size:16px}
+  button{background:#0ff;color:#000;font-weight:bold}
+  #log{height:220px;overflow-y:auto;background:#000;padding:15px;border:2px solid #0ff;border-radius:10px;margin-top:20px;font-size:14px}
+  .g{color:#0f0}.r{color:#f00}
+</style></head><body>
 <canvas id="c"></canvas>
 <div class="box">
   <h1>YAMI BOMBER</h1>
-  <p style="text-align:center;color:#0f8;margin:10px 0">MAX 500 SMS • SERVICES</p>
+  <p style="text-align:center;color:#0f8">MAX 500 SMS • 100% WORKING</p>
   <input type="text" id="t" placeholder="09123456789" maxlength="11">
-  <input type="number" id="n" placeholder="SMS Count (1-500)" min="1" max="500" value="5">
+  <input type="number" id="n" placeholder="SMS (1-500)" min="1" max="500" value="300">
   <button onclick="go()">LAUNCH ATTACK</button>
-  <div style="text-align:center;margin:20px 0;font-size:20px">
-    Success: <span class="g" id="s">0</span> | Failed: <span class="r" id="f">0</span> | Total: <span id="tot">0</span>
+  <div style="text-align:center;margin:20px;font-size:20px">
+    Success: <span class="g" id="s">0</span> | Failed: <span class="r" id="f">0</span>
   </div>
-  <div id="log">Ready — Enter number and attack!</div>
+  <div id="log">Ready </div>
 </div>
 
 <script>
-// Matrix Rain
-const c=document.getElementById('c'),ctx=c.getContext('2d');
+const c=document.getElementById('c'),x=c.getContext('2d');
 c.width=innerWidth;c.height=innerHeight;
-const chars="01アイウエオカキクケコサシスセソタチツテト";
-const drops=[];for(let i=0;i<c.width/14;i++)drops[i]=1;
-function rain(){
-  ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,c.width,c.height);
-  ctx.fillStyle='#0ff';ctx.font='14px monospace';
-  for(let i=0;i<drops.length;i++){
-    ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*14,drops[i]*14);
-    if(drops[i]*14>c.height&&Math.random()>0.975)drops[i]=0;
-    drops[i]++;
-  }
-}setInterval(rain,35);
+const drops=[];for(let i=0;i<innerWidth/14;i++)drops[i]=1;
+setInterval(()=>{x.fillStyle='rgba(0,0,0,0.05)';x.fillRect(0,0,c.width,c.height);x.fillStyle='#0ff';x.font='14px monospace';for(let i=0;i<drops.length;i++){x.fillText("01アイウエオカキクケコ"[Math.floor(Math.random()*12)],i*14,drops[i]*14);if(drops[i]*14>c.height)drops[i]=0;drops[i]++;}},35);
 
 async function go(){
   const num=document.getElementById('t').value.trim();
-  const cnt=Math.min(500,parseInt(document.getElementById('n').value)||500);
+  const cnt=Math.min(500,parseInt(document.getElementById('n').value)||300);
   const log=document.getElementById('log');
   if(!/^09\d{9}$/.test(num)){log.innerHTML="<span class='r'>Invalid number!</span>";return;}
-  
-  log.innerHTML=`Launching ${cnt} SMS attack on ${num}...`;
+  log.innerHTML=`Sending ${cnt} SMS...`;
   document.getElementById('s').textContent="0";
   document.getElementById('f').textContent="0";
-  document.getElementById('tot').textContent="0";
-
   try{
-    const r=await fetch("/api/attack",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({target:num,sms:cnt})
-    });
-    const txt=await r.text();
-    let data;
-    try{data=JSON.parse(txt);}catch{
-      log.innerHTML+="<br><span class='r'>Server busy — try again</span>";
-      return;
-    }
-    if(data.error){
-      log.innerHTML+="<br><span class='r'>"+data.error+"</span>";
-    }else{
-      document.getElementById('s').textContent=data.success;
-      document.getElementById('f').textContent=data.failed;
-      document.getElementById('tot').textContent=data.total;
-      log.innerHTML+="<br><span class='g'>ATTACK COMPLETED!</span>";
-    }
-  }catch{
-    log.innerHTML+="<br><span class='r'>Network error</span>";
-  }
+    const r=await fetch("/api/attack",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({target:num,sms:cnt})});
+    const data=await r.json();
+    document.getElementById('s').textContent=data.success||0;
+    document.getElementById('f').textContent=data.failed||0;
+    log.innerHTML+="<br><span class='g'>ATTACK DONE!</span>";
+  }catch{log.innerHTML+="<br><span class='r'>Network error — refresh page</span>";}
 }
 </script>
-</body>
-</html>
+</body></html>
