@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAMI ULTIMATE BOMBER</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=Roboto+Mono&display=swap');
+    body{margin:0;background:#000;color:#0ff;font-family:'Roboto Mono',monospace;overflow:hidden}
+    canvas{position:fixed;top:0;left:0;z-index:0}
+    .box{position:relative;z-index:10;max-width:500px;margin:30px auto;padding:30px;background:rgba(0,15,40,0.9);border:3px solid #0ff;border-radius:15px;box-shadow:0 0 50px #0ff}
+    h1{font-family:'Orbitron',sans-serif;text-align:center;font-size:3em;margin:0;color:#0ff;text-shadow:0 0 30px #0ff;animation:g 2s infinite alternate}
+    @keyframes g{from{text-shadow:0 0 20px #0ff}to{text-shadow:0 0 60px #0ff,0 0 100px #0ff}}
+    input,button{width:100%;padding:16px;margin:12px 0;border:2px solid #0ff;background:#000;color:#0ff;border-radius:10px;font-size:16px}
+    button{background:linear-gradient(45deg,#0ff,#00f);color:#000;font-weight:bold;cursor:pointer}
+    button:hover{box-shadow:0 0 40px #0ff;transform:scale(1.05)}
+    .bar{height:35px;background:#001;border:2px solid #0ff;border-radius:15px;overflow:hidden;margin:20px 0;position:relative}
+    .fill{height:100%;width:0%;background:linear-gradient(90deg,#0ff,#00f);transition:width .4s}
+    .p{position:absolute;width:100%;text-align:center;line-height:35px;font-weight:bold}
+    .stats{display:flex;justify-content:space-around;font-size:22px;margin:20px 0}
+    #log{height:260px;overflow-y:auto;background:#000;padding:15px;border:2px dashed #0ff;border-radius:10px;font-size:13px}
+    .s{color:#0f0}.f{color:#f00}
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="box">
+  <h1>YAMI BOMBING</h1>
+  <p style="text-align:center;color:#0f8">ZERO DELAY • 1–500 SMS</p>
+  
+  <input type="text" id="t" placeholder="09123456789" maxlength="11">
+  <input type="number" id="n" placeholder="Enter SMS count (1–500)" min="1" max="500" value="500">
+  
+  <button onclick="go()">LAUNCH FULL POWER</button>
+  
+  <div class="bar"><div class="fill" id="f"></div><div class="p" id="p">0%</div></div>
+  <div class="stats">
+    <div>S: <span id="s">0</span></div>
+    <div>F: <span id="f">0</span></div>
+    <div>T: <span id="tt">0</span></div>
+  </div>
+  <div id="log">Ready for nuclear strike...</div>
+</div>
+
+<script>
+// Matrix rain
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+c.width = innerWidth; c.height = innerHeight;
+const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+const drops = Array(Math.floor(c.width/14)).fill(1);
+function draw() {
+  ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle = '#0ff'; ctx.font = '14px monospace';
+  for(let i=0;i<drops.length;i++){
+    const t = chars[Math.floor(Math.random()*chars.length)];
+    ctx.fillText(t, i*14, drops[i]*14);
+    if(drops[i]*14 > c.height && Math.random()>0.975) drops[i]=0;
+    drops[i]++;
+  }
+}
+setInterval(draw, 33);
+
+async function go() {
+  const target = document.getElementById("t").value.trim();
+  const sms = parseInt(document.getElementById("n").value) || 500;
+  const log = document.getElementById("log");
+  if (!/^09\d{9}$/.test(target)) { log.innerHTML = "INVALID NUMBER"; return; }
+
+  log.innerHTML = `DESTROYING ${target} WITH ${sms} SMS...<br>`;
+  document.getElementById("f").style.width = "0%";
+  document.getElementById("p").textContent = "0%";
+
+  const es = new EventSource("/api/attack", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({target, sms})
+  });
+
+  es.onmessage = e => {
+    const d = JSON.parse(e.data);
+    if (d.error) { log.innerHTML += `<span class="f">${d.error}</span>`; es.close(); return; }
+    if (d.type==="log") {
+      document.getElementById("f").style.width = d.progress + "%";
+      document.getElementById("p").textContent = d.progress + "%";
+      document.getElementById("s").textContent = d.s;
+      document.getElementById("f").textContent = d.f;
+      document.getElementById("tt").textContent = d.t;
+      log.innerHTML += `<span class="${d.status==="success"?"s":"f"}">[${d.service}] </span>`;
+      log.scrollTop = log.scrollHeight;
+    }
+    if (d.type==="done") {
+      document.getElementById("f").style.width = "100%";
+      document.getElementById("p").textContent = "TARGET DESTROYED";
+      log.innerHTML += "<br><br>ATTACK COMPLETED — NO SURVIVORS";
+      es.close();
+    }
+  };
+}
+</script>
+</body>
+</html>
